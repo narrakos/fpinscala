@@ -35,12 +35,11 @@ object MyProgram:
 
   def fib(n: Int): Int =
     @annotation.tailrec
-    def go(n:Int, idx: Int, p1: Int, p2: Int): Int =
-      if idx == n then p1 + p2
-      else go(n, idx +1, p1+p2, p1)
+    def go(n: Int, prev: Int, cur: Int): Int =
+      if n == 0 then prev
+      else go(n - 1, cur, prev + cur)
 
-    if n == 0 || n == 1 then n
-    else go(n, 2, 1, 0)
+    go(n, 0, 1)
 
 
   // This definition and `formatAbs` are very similar..
