@@ -56,7 +56,7 @@ object List: // `List` companion object. Contains functions for creating and wor
 
   def setHead[A](l: List[A], h: A): List[A] =
     l match
-      case Nil => Cons(h, Nil)
+      case Nil => sys.error("setHead on nil list")
       case Cons(_, t) => Cons(h, t)
 
   def drop[A](l: List[A], n: Int): List[A] =
@@ -139,12 +139,14 @@ object List: // `List` companion object. Contains functions for creating and wor
       case (_, Nil) => Nil
       case (Cons(h1, t1), Cons(h2, t2)) => Cons(f(h1,h2), zipWith(t1,t2,f))
 
-  def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean =
-    @tailrec
-    def go[A](a: List[A], b: List[A]): Boolean =
-      (a, b) match
-        case (_, Nil) => true
-        case (Cons(h1, t1), Cons(h2, t2)) => if h1 == h2 then true else go(t1,t2)
-        case _ => false
+  @annotation.tailrec
+  def startsWith[A](l: List[A], prefix: List[A]): Boolean = (l, prefix) match
+    case (_, Nil) => true
+    case (Cons(h, t), Cons(h2, t2)) if h == h2 => startsWith(t, t2)
+    case _ => false
 
-    go(sup, sub)
+  @annotation.tailrec
+  def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = sup match
+    case Nil => sub == Nil
+    case _ if startsWith(sup, sub) => true
+    case Cons(h, t) => hasSubsequence(t, sub)
