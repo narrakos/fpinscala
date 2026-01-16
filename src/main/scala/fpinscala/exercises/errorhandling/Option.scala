@@ -7,15 +7,25 @@ enum Option[+A]:
   case Some(get: A)
   case None
 
-  def map[B](f: A => B): Option[B] = ???
+  def map[B](f: A => B): Option[B] = this match
+    case Option.Some(get) => Some(f(get))
+    case Option.None => None
 
-  def getOrElse[B>:A](default: => B): B = ???
+  def getOrElse[B>:A](default: => B): B = this match
+    case Option.Some(get) => get
+    case Option.None => default
 
-  def flatMap[B](f: A => Option[B]): Option[B] = ???
+  def flatMap[B](f: A => Option[B]): Option[B] = this match
+    case Option.Some(get) => f(get)
+    case Option.None => None
 
-  def orElse[B>:A](ob: => Option[B]): Option[B] = ???
+  def orElse[B>:A](ob: => Option[B]): Option[B] = this match
+    case Option.Some(get) => this
+    case Option.None => ob
 
-  def filter(f: A => Boolean): Option[A] = ???
+  def filter(f: A => Boolean): Option[A] = this match
+    case Option.Some(get) if f(get) => this
+    case Option.None => None
 
 object Option:
 
@@ -36,10 +46,21 @@ object Option:
     if xs.isEmpty then None
     else Some(xs.sum / xs.length)
 
-  def variance(xs: Seq[Double]): Option[Double] = ???
+  def variance(xs: Seq[Double]): Option[Double] = {
+    mean(xs).flatMap(m => mean(xs.map(x => math.pow(x-m,2))))
+  }
 
-  def map2[A,B,C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = ???
+  def map2[A,B,C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = (a, b) match
+    case (None,_) => None
+    case (_,None) => None
+    case (Some(a),Some(b)) => Some(f(a,b))
+    //alt: a.flatMap(aa => b.map(bb => f(aa, bb)))
 
-  def sequence[A](as: List[Option[A]]): Option[List[A]] = ???
+  def sequence[A](as: List[Option[A]]): Option[List[A]] =
+    as.foldRight(Some(List[A]())) {(o, as) =>
+      o match
+        case Option.Some(get) => Some(::(get, as.getOrElse(List[A]())))
+        case Option.None => None
+    }
 
   def traverse[A, B](as: List[A])(f: A => Option[B]): Option[List[B]] = ???
